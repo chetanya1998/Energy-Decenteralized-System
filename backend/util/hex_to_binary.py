@@ -43,6 +43,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-"""
-0x in output represents the hexadecimal digit
-"""

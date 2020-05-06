@@ -1,10 +1,11 @@
-
+import sys
+sys.path.append("/home/chetanya/workspace/blockchain/Python_Proj")
 import time
 
 from backend.util.crypto_hash import crypto_hash
-from backend.config import MINE_RATE
-from backend.util.hex_to_binary import hex_to_binary
 
+from backend.util.hex_to_binary import hex_to_binary
+from backend.config import MINE_RATE
 GENESIS_DATA = {
     'timestamp': 1,
     'last_hash': 'genesis_last_hash',
@@ -35,11 +36,11 @@ class Block:
         return (
             'Block('
             f'timestamp: {self.timestamp}, '
-            f'last_hash: {self.last_hash}, '
+            f'last_hash:{self.last_hash}, '
             f'hash: {self.hash}, '
-            f'data: {self.data}), '
+            f'data: {self.data}, '
             f'difficulty:{self.difficulty}, '
-            f'nonce:{self.nonce}'
+            f'nonce:{self.nonce})'
         )
 
     @staticmethod
@@ -53,16 +54,15 @@ class Block:
         last_hash = last_block.hash
         difficulty = Block.adjust_difficulty(last_block,timestamp)
         nonce = 0
-        hash = crypto_hash(timestamp, last_hash, data,difficulty,nonce)
+        hash = crypto_hash(timestamp,last_hash,data,difficulty,nonce)
 
-
-        while hex_to_binary(hash)[0:] != '0'* difficulty:
+        while hex_to_binary(hash)[0:difficulty] != '0'* difficulty:
              nonce += 1
              timestamp = time.time()
              difficulty = Block.adjust_difficulty(last_block,timestamp)
-             hash = crypto_hash(timestamp, last_hash, data,difficulty,nonce)
+             hash = crypto_hash(timestamp,last_hash,data,difficulty,nonce)
 
-        return Block(timestamp, last_hash, hash, data,difficulty,nonce)
+        return Block(timestamp,last_hash,hash,data,difficulty,nonce)
 
     @staticmethod
     def genesis():
@@ -89,12 +89,43 @@ class Block:
             return last_block.difficulty - 1
 
         return 1
+    @staticmethod
+    def is_valid_block(last_block,block):
+        """
+        Validate block by enforcing the following rules:
+        - the block must have the proper last_hash refrence
+        - the block must meet the proof  of work adjustment
+        -the difficulty must only adjust by 1
+        -the block hash must be a valid combination of block fields
+        """
+        if block.last_hash != last_block.hash:
+            raise Exception('The block last_hash must be correct')
 
+        if hex_to_binary(block.hash)[0:block.difficulty] != '0' * block.difficulty:
+            raise Exception('the proof of requirement was not met')
 
+        if abs(last_block.difficulty - block.difficulty) > 1:
+            raise Exception('the block difficulty must only adjust by 1')
+
+        reconstructed_hash = crypto_hash(
+        block.timestamp,
+        block.last_hash,
+        block.data,
+        block.nonce,
+        block.difficulty
+        )
+        if block.hash != reconstructed_hash:
+            raise Exception('the block hash must be correct')
 def main():
-    genesis_block = Block.genesis()
-    block = Block.mine_block(genesis_block, 'foo')
-    print(f'block: {block}')
+    genesis_block= Block.genesis()
+    bad_block = Block.mine_block(genesis_block,'foo')
+    bad_block.last_hash ='evil_data'
+
+    try:
+        Block.is_vaid_block(genesis_block,bad_block)
+    except Exception as e:
+        print(f'is_valid_block:{e}')
+
 
 if __name__ == '__main__':
     main()

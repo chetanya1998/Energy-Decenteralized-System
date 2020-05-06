@@ -1,7 +1,5 @@
 import hashlib
 import json
-
-
 def crypto_hash(*args):
     """
     Return a sha-256 hash of the given arguements.
