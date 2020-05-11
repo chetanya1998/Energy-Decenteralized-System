@@ -42,7 +42,13 @@ class Block:
             f'difficulty:{self.difficulty}, '
             f'nonce:{self.nonce})'
         )
-
+    def __eq__(self,other):
+        return self.__dict__==other.__dict__
+    def to_json(self):
+        """
+        Serialize the block into a dictionary of its atttributes
+        """
+        return self.__dict__
     @staticmethod
     def mine_block(last_block, data):
         """
@@ -77,6 +83,12 @@ class Block:
         # )
         return Block(**GENESIS_DATA)
     @staticmethod
+    def from_json(block_json):
+        """
+        Deserialize a block's json representation back into a block instance
+        """
+        return Block(**block_json)
+    @staticmethod
     def adjust_difficulty(last_block,new_timestamp):
         """
         calculates the adjusted difficulty according to the mine MINE_RATE
@@ -102,10 +114,10 @@ class Block:
             raise Exception('The block last_hash must be correct')
 
         if hex_to_binary(block.hash)[0:block.difficulty] != '0' * block.difficulty:
-            raise Exception('the proof of requirement was not met')
+            raise Exception('The proof of work requirement was not met')
 
         if abs(last_block.difficulty - block.difficulty) > 1:
-            raise Exception('the block difficulty must only adjust by 1')
+            raise Exception('The block difficulty must only adjust by 1')
 
         reconstructed_hash = crypto_hash(
         block.timestamp,
