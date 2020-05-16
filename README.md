@@ -25,6 +25,21 @@ python3 -m backend.app
 **Run a peer Instance**
 
 Make sure to activate virtual environment.
-``
+```
 export PEER=True&& python3 -m backend.app
-``
+```
+
+**Run the frontend**
+
+In the frontend directory:
+
+```
+yarn start
+```
+**Seed the backend with data**
+
+
+Make sure to activate the virtual environment
+```
+export SEED_DATA=True && python3 -m backend.app
+```
